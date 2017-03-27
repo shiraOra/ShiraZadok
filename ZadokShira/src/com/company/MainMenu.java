@@ -1,11 +1,8 @@
 package com.company;
 
 
-import com.company.actions.*;
-
 import java.io.File;
 import java.util.Random;
-import java.util.Scanner;
 
 /**
  * Created by hackeru on 2/28/2017.
@@ -15,30 +12,32 @@ public  class MainMenu {
 
    static Input input =new UserInput();
    static Output output =new UserOutput();
+   private static final String EXIT = "0";
 
     public static void showMenu() {
 
-        Scanner in = new Scanner(System.in);
-        Algorithm algorithm;
+        Algorithm algorithm=null;
         output.output("Hi, Enter 1 for encrypt, 2 for decrypt and 0 for exit");
-        String input = null;
-        input = MainMenu.input.input();
+        String choice = null;
+        choice = MainMenu.input.input();
         try {
-            switch (input) {
-                case "0":
+            switch (choice) {
+                case EXIT:
                     return;
-                case "1": {
-                    algorithm=new CaesarAlgorithm();
+                case "1":{
+                    output.output("Choose algorithm for encrypt");
+                    algorithm=chooseAlgorithm();
                     randomKey(algorithm);
-                    String s = getFileFromUser();
-                    new FileEncryptor().encryptFile(new File(s), algorithm);
+                    String filePath = getFileFromUser();
+                    new FileEncryptor().encryptFile(new File(filePath), algorithm);
                     break;
                 }
                 case "2": {
-                    algorithm = new CaesarAlgorithm();
+                    output.output("Choose algorithm for decrypt");
+                    algorithm=chooseAlgorithm();
                     EnterKey(algorithm);
-                    String s = getFileFromUser();
-                    new FileEncryptor().decryptFile(new File(s),algorithm);
+                    String filePath = getFileFromUser();
+                    new FileEncryptor().decryptFile(new File(filePath),algorithm);
                     break;
                 }
                 default: {
@@ -63,18 +62,53 @@ public  class MainMenu {
         MainMenu.showMenu();
     }
 
-    private static void EnterKey(Algorithm algorithm) {
-        output.output("Enter the key ");
-        int key=Integer.parseInt(input.input());
-        algorithm.setKey(key);
+    private static void EnterKey(Algorithm algorithm)throws KeyException {
+        if(algorithm instanceof MultAlgorithm) {
+            boolean isValid = false;
+            while (!isValid) {
+                output.output("Enter the key ");
+                int key = Integer.parseInt(input.input());
+                if ((key % 2) != 0) {
+                    algorithm.setKey(key);
+                    isValid = true;
+                }
+                else throw new KeyException("The key shouldn't be even number");
+            }
+        }
+        else {
+            output.output("Enter the key ");
+            int key = Integer.parseInt(input.input());
+            algorithm.setKey(key);
+        }
     }
-
+/*    private static void EnterKeyMult(Algorithm algorithm) {
+        boolean isValid=false;
+        while(!isValid) {
+            output.output("Enter the key ");
+            int key = Integer.parseInt(input.input());
+            if ((key%2)!=0) {
+                algorithm.setKey(key);
+                isValid = true;
+            }
+            else output.output("This key isn't valid for multiplication algorithm");
+        }
+    }*/
     private static void randomKey(Algorithm algorithm) {
         Random random=new Random(System.currentTimeMillis());
-        algorithm.setKey(random.nextInt(255));
+        if (algorithm instanceof MultAlgorithm)
+            algorithm.setKey(random.nextInt(128)*2-1);
+        else
+            algorithm.setKey(random.nextInt(255));
        output.output("The key is: ");
        output.output(String.valueOf(algorithm.getKey()));
     }
+
+ /*   private static void randomKeyMult(Algorithm algorithm) {
+        Random random=new Random(System.currentTimeMillis());
+        algorithm.setKey(random.nextInt(128)*2-1);
+        output.output("The key is: ");
+        output.output(String.valueOf(algorithm.getKey()));
+    }*/
 
     public static String getFileFromUser() {
         String s=null;
@@ -90,4 +124,50 @@ public  class MainMenu {
         }
         return s;
     }
+
+    public static Algorithm chooseAlgorithm(){
+        String choice;
+        Algorithm algorithm=null;
+        output.output("For Caesar press 1");
+        output.output("For Xor press 2");
+        output.output("For Multiplication press 3");
+        output.output("For Reverse press 4");
+        choice=input.input();
+        switch (choice){
+            case "1":{
+                algorithm=new CaesarAlgorithm();
+                break;
+            }
+            case "2": {
+                algorithm = new XorAlgorithm();
+                break;
+            }
+
+            case "3": {
+                algorithm = new MultAlgorithm();
+                break;
+            }
+            case "4": {
+                output.output("Choose Caesar 1 Xor 2 or Multiplication 3");
+                choice=input.input();
+                switch (choice){
+                    case "1":{
+                        algorithm=new ReverseAlgorithm(new CaesarAlgorithm());
+                        break;
+                    }
+                    case "2":{
+                        algorithm=new ReverseAlgorithm(new XorAlgorithm());
+                        break;
+                    }
+                    case "3":{
+                        algorithm=new ReverseAlgorithm(new MultAlgorithm());
+                        break;
+                    }
+                }
+            }
+
+        }
+        return algorithm;
+    }
+    //public class KeyException extends Exception(){}
 }

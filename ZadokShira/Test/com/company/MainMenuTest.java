@@ -1,16 +1,9 @@
 package com.company;
 
-import com.company.actions.FileAction;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.FileNotFoundException;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -73,7 +66,7 @@ class MainMenuTest {
 
 
    @Test
-    void invalidPath(){
+    void showMenu_invalidPath_fail(){
         String s = "hello";
         when(input.input()).thenReturn("1").thenReturn(s).thenReturn("0");
         MainMenu.showMenu();
